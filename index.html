@@ -184,10 +184,12 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
   <details class="card" id="accd" style="margin-top:16px"><summary><b>Accesos</b> · quién puede usar la app</summary>
     <p class="st" id="acnote">Los usuarios registran solo en su tienda; los administradores ven el panel de todas. Comparte la app con toda la organización como Colaborador, y a cada administrador también como Editor.</p>
     <div class="scroll"><table class="xt"><thead><tr><th>Persona</th><th>Rol</th><th>Tienda</th><th></th></tr></thead><tbody id="acct"></tbody></table></div>
+    <div id="acform">
     <h3 style="font-size:.95rem;margin:16px 0 8px">Agregar persona</h3>
     <div class="row"><div><label for="acq">Correo o nombre</label><input id="acq" autocomplete="off" placeholder="nombre@ampm.com.ni"><div id="acr"></div></div>
       <div><label for="acrol">Rol</label><select id="acrol"><option value="usuario">Usuario (registra en una tienda)</option><option value="admin">Administrador (ve todas las tiendas)</option></select></div></div>
     <div class="row"><div><label for="actd">Código de tienda</label><input id="actd" list="actl" placeholder="AMPM57" autocomplete="off"><datalist id="actl"></datalist></div><div style="align-self:end"><button id="acadd" style="width:100%">Agregar</button></div></div>
+    </div>
     <div id="acm" style="min-height:1.2em;font-weight:600;font-size:.85rem"></div>
   </details>
 
@@ -745,10 +747,15 @@ async function renderAcc(){
   const codes=[...new Set(acc.map(a=>a.tienda).filter(Boolean).map(c=>c.toUpperCase()).concat(cfg.tienda?[cfg.tienda]:[]))].sort();
   $('actl').innerHTML=codes.map(c=>'<option value="'+esc(c)+'">').join('');
   const ownerRow=me.isOwner?'<tr><td><b>'+esc(nm(uid))+'</b><br><small>'+esc(em(uid))+'</small></td><td>Administrador (dueño de la app)</td><td>'+esc(cfg.tienda||'—')+'</td><td></td></tr>':'';
+  // Solo el dueño de la app da, cambia o quita accesos; los demás administradores solo ven la lista.
+  const ed=!!me.isOwner;
+  $('acform').style.display=ed?'':'none';
+  if(!ed){$('acnote').textContent='Aquí ves quién tiene acceso a la app. Solo el dueño de la app puede agregar, cambiar o quitar accesos.';$('acm').textContent=''}
   $('acct').innerHTML=ownerRow+acc.filter(a=>!(me.isOwner&&a.id===uid)).sort((a,b)=>(a.tienda||'').localeCompare(b.tienda||'')||nm(a.id).localeCompare(nm(b.id))).map(a=>'<tr data-ac="'+esc(a.id)+'"><td><b>'+esc(nm(a.id))+'</b><br><small>'+esc(em(a.id))+'</small></td>'+
-    '<td><select data-f="rol"><option value="usuario"'+(a.rol==='usuario'?' selected':'')+'>Usuario</option><option value="admin"'+(a.rol==='admin'?' selected':'')+'>Administrador</option></select></td>'+
+    (ed?'<td><select data-f="rol"><option value="usuario"'+(a.rol==='usuario'?' selected':'')+'>Usuario</option><option value="admin"'+(a.rol==='admin'?' selected':'')+'>Administrador</option></select></td>'+
     '<td><input data-f="tienda" value="'+esc(a.tienda||'')+'" list="actl" placeholder="—"></td>'+
-    '<td style="white-space:nowrap"><button class="sec sm" data-acs="1">Guardar</button> '+(accDel===a.id?'<button class="sm" data-acx2="1">Confirmar quitar</button>':'<button class="sec sm" data-acx="1">Quitar</button>')+'</td></tr>').join('');
+    '<td style="white-space:nowrap"><button class="sec sm" data-acs="1">Guardar</button> '+(accDel===a.id?'<button class="sm" data-acx2="1">Confirmar quitar</button>':'<button class="sec sm" data-acx="1">Quitar</button>')+'</td>'
+    :'<td>'+(a.rol==='admin'?'Administrador':'Usuario')+'</td><td>'+esc(a.tienda||'—')+'</td><td></td>')+'</tr>').join('');
 }
 let accT=0;
 $('acq').oninput=async()=>{
@@ -760,6 +767,7 @@ $('acq').oninput=async()=>{
 };
 $('acr').onclick=e=>{const b=e.target.closest('[data-id]');if(!b)return;accSel=b.dataset.id;const p=people[accSel]||{};$('acq').value=p.email||p.name||'';$('acr').innerHTML='<div class="st">Seleccionado: '+esc(p.name||'')+' '+esc(p.email||'')+'</div>'};
 $('acadd').onclick=async()=>{
+  if(!me||!me.isOwner)return;
   const m=$('acm'),rol=$('acrol').value,t=$('actd').value.trim().toUpperCase();
   if(!accSel){m.textContent='Busca a la persona por su correo y elígela de la lista.';return}
   if(rol==='usuario'&&!t){m.textContent='Escribe el código de tienda del usuario (por ejemplo AMPM57).';return}
@@ -767,7 +775,7 @@ $('acadd').onclick=async()=>{
   catch(e){m.textContent='No se pudo guardar ('+((e&&e.code)||(e&&e.message)||e)+').'+(EXT()?'':' ¿Tienes permiso de Editor en la app?')}
 };
 $('acct').onclick=async e=>{
-  const tr=e.target.closest('[data-ac]');if(!tr)return;const id=tr.dataset.ac,m=$('acm');
+  const tr=e.target.closest('[data-ac]');if(!tr||!me.isOwner)return;const id=tr.dataset.ac,m=$('acm');
   if(e.target.dataset.acx){accDel=id;return renderAcc()}
   try{
     if(e.target.dataset.acx2){await dbr.doc('acceso/'+id).delete();accDel=null;m.textContent='Acceso quitado. Sus egresos se conservan.'}
