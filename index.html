@@ -108,6 +108,7 @@ details.card>summary{cursor:pointer;color:var(--nv);font-size:.95rem}
 #acr button{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--bd);color:var(--nv);font-weight:500;margin-top:4px;padding:8px}
 #acr button small{color:var(--mu);margin-left:6px}
 .xt td input,.xt td select{padding:5px;min-width:90px}
+.xt th.srt{cursor:pointer;user-select:none}.xt th.srt:hover{background:#2a3d63}.xt th.srt i{font-style:normal;color:var(--or);margin-left:4px}
 @media(min-width:1000px){#admls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}#admls .card{margin:0}}
 .navb{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .admh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
@@ -134,8 +135,10 @@ details.card>summary{cursor:pointer;color:var(--nv);font-size:.95rem}
 a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px solid var(--nv);border-radius:8px;padding:5px 10px;font-size:.8rem;font-weight:600;color:var(--nv);background:#fff;min-height:38px}
 @media(min-width:1000px){main{max-width:1280px}.layout{display:grid;grid-template-columns:400px minmax(0,1fr);gap:16px;align-items:start}.lcol,.rcol{display:block}.kp{grid-template-columns:repeat(3,1fr)}.k.t{grid-column:auto}.rc{max-width:760px}}
 @media(max-width:520px){main{padding:10px}.card{padding:12px}input,select{font-size:16px}.row{grid-template-columns:1fr}.row.keep{grid-template-columns:1fr 1fr}.rr{grid-template-columns:1fr;margin-top:16px}.rr>div:first-child{margin-bottom:2px}.fp{flex-wrap:wrap}.fp>div{flex:1 1 45%}.rtt{font-size:16px}.rno{font-size:15px;gap:10px}.sg{gap:16px}.k b{font-size:1.2rem}}
-@page{size:letter;margin:14mm}
-@media print{body{background:#fff}header,#err,#sw,#pm,#av,.lcol,#dcard,#lcard,#xcard{display:none!important}.layout,.rcol{display:block!important}#v{display:block!important;border:0;padding:0;margin:0}.bar2{display:none!important}.rc{border:0;max-width:none;padding:0;font-size:12px}.rtt{font-size:24px}.rbox{font-size:20px}.ln{font-size:14px}}
+/* Margen de página en 0 para que el navegador no imprima fecha, hora, título ni dirección; el margen lo da el body. */
+@page{size:letter;margin:0}
+@media print{body{background:#fff;padding:14mm 16mm}main{padding:0;max-width:none}
+  header,#err,#sw,#pm,#av,.lcol,#dcard,#lcard,#xcard,#sup,#adm,#setup,#noacc,#cuenta,#aviso-clave,#cclave,#login,#vm,#simbar{display:none!important}.layout,.rcol{display:block!important}#v{display:block!important;border:0;padding:0;margin:0}.bar2{display:none!important}.rc{border:0;max-width:none;padding:0;font-size:12px}.rtt{font-size:24px}.rbox{font-size:20px}.ln{font-size:14px}}
 </style>
 </head>
 <body>
@@ -168,7 +171,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 <section id="adm" style="display:none" aria-labelledby="admt">
   <div class="card">
     <div class="admh"><div><h2 id="admt" style="margin:0">Panel de tiendas</h2><div class="st" id="admst" style="margin-top:2px"></div></div>
-      <div class="ac" style="margin:0"><button class="sec sm" id="admr">Actualizar</button><button class="sec sm" id="adma">Ver todas juntas</button><button class="sec sm" id="admx">Excel para gerencia</button><button class="sm" id="admo">Registrar en mi tienda</button></div></div>
+      <div class="ac" style="margin:0"><button class="sec sm" id="admr">Actualizar</button><button class="sec sm" id="adma">Ver todas juntas</button><button class="sec sm" id="admx">Excel para gerencia</button><button class="sec sm" id="admp">PDF de facturas pendientes</button><button class="sm" id="admo">Registrar en mi tienda</button></div></div>
     <div id="admw" class="st" style="display:none;margin-top:8px;color:var(--nv);font-weight:600">Estás registrado como administrador, pero para ver las tiendas el dueño de la app debe compartírtela como Editor.</div>
     <div id="admxm" class="st"></div>
     <div class="mnav" style="margin-top:12px"><button class="sec sm" id="amp" aria-label="Mes anterior">‹</button><b id="aml"></b><button class="sec sm" id="amn" aria-label="Mes siguiente">›</button></div>
@@ -274,6 +277,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 <div class="card" id="lcard">
   <h2>Egresos y facturas</h2>
   <input id="q" placeholder="Buscar por número, nombre, concepto o monto" style="margin-bottom:10px">
+  <div class="ac" style="margin:0 0 10px"><button class="sec sm" id="pdfp">PDF de facturas pendientes</button><span class="st" id="pdfpm" style="margin:0"></span></div>
   <details style="margin-bottom:10px"><summary>Filtros por fecha, estado y grupo</summary><div style="margin-top:10px">
   <div class="row" style="margin-bottom:10px">
     <div><label for="fb">Filtrar fechas por</label><select id="fb"><option value="pago">Fecha de pago</option><option value="recibo">Fecha del recibo</option></select></div>
@@ -685,9 +689,10 @@ function enter(v){view=v;showView()}
 $('toadm').onclick=()=>enter('adm');$('admo').onclick=()=>enter('own');$('adma').onclick=()=>enter('all');
 // Panel de tiendas (solo el dueño de la app).
 let admTok=0;
-const diasTxt=d=>d==null?'Sin registros todavía':d<=0?'Último registro: hoy':d==1?'Último registro: ayer':'Último registro: hace '+d+' días';
+const diasTxt=d=>d==null?'Sin egresos registrados':d<=0?'Último registro: hoy':d==1?'Último registro: ayer':'Último registro: hace '+d+' días';
+const haceTxt=s=>{const d=Math.round((new Date(today)-new Date(s.slice(0,10)))/864e5);return d<=0?'hoy':d==1?'ayer':'hace '+d+' días'};
 let admLoaded=false;
-const panelList=()=>(hasStore?[{id:uid,mine:true,tienda:cfg.tienda,ult:cfg.ult}]:[]).concat(stores);
+const panelList=()=>(hasStore?[{id:uid,mine:true,tienda:cfg.tienda,ult:cfg.ult,visto:cfg.visto}]:[]).concat(stores);
 async function renderAdm(fresh){
   const tok=++admTok,m=$('mes').value;$('aml').textContent=mlab(m);
   $('admo').style.display=hasStore?'':'none';$('admw').style.display=dbr&&!canAdm&&!me.isOwner?'block':'none';
@@ -712,7 +717,7 @@ async function renderAdm(fresh){
   $('admst').textContent=(data.length+waiting.length)+((data.length+waiting.length)==1?' tienda':' tiendas')+(late?' · '+late+' sin registrar hace 7 días o más':'')+' · pendientes de todas las fechas y lo pagado en '+mlab(m).toLowerCase()+'.';
   $('admls').innerHTML=data.map(d=>{
     const x=d.x,nm=x.mine?(x.tienda||'Tu tienda')+' (la tuya)':x.tienda,top=d.pe.slice(0,3);
-    return '<div class="card sc"><div class="sch"><div><h3>'+esc(nm)+'</h3><div class="st" style="margin-top:2px">'+(x.gerente?esc(x.gerente)+' · ':'')+diasTxt(d.dias)+'</div></div><button class="sm" data-in="'+esc(x.mine?'own':x.id)+'">Entrar ›</button></div>'+
+    return '<div class="card sc"><div class="sch"><div><h3>'+esc(nm)+'</h3><div class="st" style="margin-top:2px">'+(x.gerente?esc(x.gerente)+' · ':'')+(x.visto?'Entró a la app '+haceTxt(x.visto)+' · ':'')+diasTxt(d.dias)+'</div></div><button class="sm" data-in="'+esc(x.mine?'own':x.id)+'">Entrar ›</button></div>'+
       (x.err?'<div class="st">No se pudieron leer los egresos de esta tienda. Usa Actualizar.</div>':'')+
       '<div class="sbar" role="img" aria-label="Pagado '+fmt(d.sg)+', pendiente '+fmt(d.sp)+'"><i class="pg" style="width:'+(d.sg/mx*100)+'%"></i><i class="pe" style="width:'+(d.sp/mx*100)+'%"></i></div>'+
       '<div class="snum"><span><b>'+fmt(d.sg)+'</b> pagado · '+ne(d.pg.length)+'</span><span><b>'+fmt(d.sp)+'</b> pendiente · '+ne(d.pe.length)+'</span></div>'+
@@ -791,9 +796,9 @@ function gerBook(R,titulo,inP){
   const by=(a,b)=>(a._tn||'').localeCompare(b._tn||'')||a.fecha.localeCompare(b.fecha)||a.n-b.n;
   const P=R.filter(r=>paid(r)&&inP(r)).sort(by),N=R.filter(r=>!anul(r)&&!paid(r)).sort(by);
   const ctl=r=>vst(r)==='validar'?vwhy(r):paid(r)?'Conciliado':'Pendiente',tot=L=>Math.round(L.reduce((s,r)=>s+r.monto,0)*100)/100;
-  const p=[['Total','Centro Costo','Descripción','Grupo','Proveedor / Páguese a','No. de egreso','Fecha','Fecha de pago','Control']].concat(P.map(r=>[r.monto,r._tn||'',r.concepto||'Sin concepto',r.grupo||'Sin grupo',r.para||'',lab(r),fdate(r.fecha),fdate(fp(r)),ctl(r)]));
+  const p=[['Total','Centro Costo','Descripción','Grupo','Proveedor / Páguese a','No. de egreso','Fecha','Fecha de pago','Control']].concat(P.map(r=>[r.monto,r._tn||'',r.concepto||'Sin concepto',r.grupo||'Sin grupo',r.para||'',lab(r),{d:r.fecha},fp(r)?{d:fp(r)}:'',ctl(r)]));
   p.push([{f:'SUM(A2:A'+p.length+')',v:tot(P)},'TOTAL']);
-  const n=[['Total','Centro Costo','Descripción','Grupo','Proveedor / Páguese a','No. de egreso','Fecha','Control']].concat(N.map(r=>[r.monto,r._tn||'',r.concepto||'Sin concepto',r.grupo||'Sin grupo',r.para||'',lab(r),fdate(r.fecha),ctl(r)]));
+  const n=[['Total','Centro Costo','Descripción','Grupo','Proveedor / Páguese a','No. de egreso','Fecha','Control']].concat(N.map(r=>[r.monto,r._tn||'',r.concepto||'Sin concepto',r.grupo||'Sin grupo',r.para||'',lab(r),{d:r.fecha},ctl(r)]));
   n.push([{f:'SUM(A2:A'+n.length+')',v:tot(N)},'TOTAL']);
   const cs=[...new Set(R.map(r=>r._tn||''))].sort(),sum=(L,c)=>Math.round(L.filter(r=>(r._tn||'')===c).reduce((s,r)=>s+r.monto,0)*100)/100;
   const s=[['Centro Costo','Pagado '+titulo,'No pagado','Por validar']].concat(cs.map(c=>[c,sum(P,c),sum(N,c),R.filter(r=>(r._tn||'')===c&&vst(r)==='validar').length]));
@@ -892,6 +897,8 @@ async function load(){
   if(dbc&&!readFail){
     await loadOwnG();
     if(myCode&&cfg.tienda!==myCode){cfg.tienda=myCode;if(cfgExists)cfgPend=true}
+    // Anota el día en que la tienda entró a la app (una vez al día), para que el panel lo muestre aunque no registre nada.
+    if(hasStore&&cfg.visto!==today){cfg.visto=today;cfgPend=true}
     // Marca "conc" en cada egreso propio según el pago de gerencia y la confirmación de la tienda.
     own.forEach(r=>{const d=dc(r);if(r.conc!==d){r.conc=d;pend.add(r.n)}});jset(PK,[...pend]);
     jset(BK,own);jset(CBK,cfg);
@@ -1039,18 +1046,30 @@ function syncX(){const m=$('mes').value;if(!m)return;const[y,mm]=m.split('-').ma
 function setMes(d){$('mes').value=d;exp=null;syncX();if(view==='adm')renderAdm(false);else refresh()}
 // En tiendas de solo lectura, primero se piden los egresos del periodo consultado.
 function refresh(){if(ro)roEnsure().then(render);else render()}
+const tipoT=r=>isF(r)?'Factura de proveedor':'Recibo de egreso';
+// Columnas del consolidado: la misma lista sirve para la tabla, el copiado y el Excel.
+// d = fecha, n = monto. Se ordena con clic en el título (xs = columna y sentido).
+let xs={k:'',dir:1};
+const XC=()=>(view==='all'?[{k:'tienda',h:'Tienda',v:r=>r._tn||''}]:[]).concat([
+  {k:'lab',h:'No. de egreso',v:r=>lab(r)},{k:'tipo',h:'Tipo',v:tipoT},{k:'fecha',h:'Fecha',v:r=>r.fecha,d:1},
+  {k:'concepto',h:'Descripción',v:r=>r.concepto||'Sin concepto'},{k:'para',h:'Proveedor / Páguese a',v:r=>r.para||''},
+  {k:'grupo',h:'Grupo',v:r=>r.grupo||'Sin grupo'},{k:'monto',h:'Monto',v:r=>r.monto,n:1},{k:'estado',h:'Estado',v:r=>VL[vst(r)]},
+  {k:'fpago',h:'Fecha de pago',v:r=>fp(r),d:1}]);
 function consRows(){
   const a=$('xd').value,b=$('xh').value,by=$('xb').value,key=r=>by==='pago'?fp(r):r.fecha;
-  return rows.filter(r=>{if(anul(r))return false;if(by==='pago'&&!paid(r))return false;const d=key(r);return(!a||d>=a)&&(!b||d<=b)}).sort((x,y)=>key(x).localeCompare(key(y))||x.n-y.n);
+  const l=rows.filter(r=>{if(anul(r))return false;if(by==='pago'&&!paid(r))return false;const d=key(r);return(!a||d>=a)&&(!b||d<=b)});
+  const c=XC().find(x=>x.k===xs.k),base=(x,y)=>key(x).localeCompare(key(y))||x.n-y.n;
+  return l.sort(c?(x,y)=>{const p=c.v(x),q=c.v(y);return(c.n?p-q:String(p).localeCompare(String(q),'es',{numeric:true,sensitivity:'base'}))*xs.dir||base(x,y)}:base);
 }
-const tipoT=r=>isF(r)?'Factura de proveedor':'Recibo de egreso';
+const xcell=(c,r)=>{const v=c.v(r);return c.d?(v?fdate(v):''):c.n?fmt(v):String(v)};
 function xtable(){
-  const l=consRows(),tot=l.reduce((s,r)=>s+r.monto,0),mt=view==='all';
-  $('xth').innerHTML='<tr>'+(mt?'<th>Tienda</th>':'')+'<th>No. de egreso</th><th>Tipo</th><th>Fecha</th><th>Descripción</th><th>Proveedor / Páguese a</th><th>Grupo</th><th class="n">Monto</th><th>Estado</th><th>Fecha de pago</th></tr>';
-  $('xtb').innerHTML=l.map(r=>'<tr>'+(mt?'<td>'+esc(r._tn)+'</td>':'')+'<td>'+esc(lab(r))+'</td><td>'+tipoT(r)+'</td><td>'+fdate(r.fecha)+'</td><td>'+esc(r.concepto||'Sin concepto')+'</td><td>'+esc(r.para||'')+'</td><td>'+esc(r.grupo||'Sin grupo')+'</td><td class="n">'+fmt(r.monto)+'</td><td>'+VL[vst(r)]+'</td><td>'+(fp(r)?fdate(fp(r)):'')+'</td></tr>').join('');
-  $('xtf').innerHTML=l.length?'<tr><td colspan="'+(mt?7:6)+'">Total · '+l.length+(l.length==1?' egreso':' egresos')+'</td><td class="n">'+fmt(tot)+'</td><td colspan="2"></td></tr>':'';
+  const l=consRows(),tot=l.reduce((s,r)=>s+r.monto,0),cols=XC(),mi=cols.findIndex(c=>c.n);
+  $('xth').innerHTML='<tr>'+cols.map(c=>'<th class="srt'+(c.n?' n':'')+'" data-xs="'+c.k+'" title="Ordenar por '+esc(c.h.toLowerCase())+'">'+esc(c.h)+(xs.k===c.k?'<i>'+(xs.dir>0?'▲':'▼')+'</i>':'')+'</th>').join('')+'</tr>';
+  $('xtb').innerHTML=l.map(r=>'<tr>'+cols.map(c=>'<td'+(c.n?' class="n"':'')+'>'+esc(xcell(c,r))+'</td>').join('')+'</tr>').join('');
+  $('xtf').innerHTML=l.length?'<tr><td colspan="'+mi+'">Total · '+l.length+(l.length==1?' egreso':' egresos')+'</td><td class="n">'+fmt(tot)+'</td><td colspan="'+(cols.length-mi-1)+'"></td></tr>':'';
   $('xe').style.display=l.length?'none':'block';
 }
+$('xth').onclick=e=>{const t=e.target.closest('[data-xs]');if(!t)return;const k=t.dataset.xs;xs=xs.k===k?{k,dir:-xs.dir}:{k,dir:(k==='monto'||k==='fecha'||k==='fpago')?-1:1};xtable()};
 const crcT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 const crc=u=>{let c=-1;for(let i=0;i<u.length;i++)c=crcT[(c^u[i])&255]^(c>>>8);return(c^-1)>>>0};
 function zip(fs){
@@ -1066,20 +1085,42 @@ function zip(fs){
 }
 function buildXlsx(sheets){
   const X=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),NS='xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-  const sh=s=>{const last=s.aoa.length-1;
-    let x=H+'<worksheet '+NS+'><cols>'+s.widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols><sheetData>';
-    s.aoa.forEach((row,ri)=>{x+='<row r="'+(ri+1)+'">';row.forEach((v,ci)=>{
-      if(v===''||v==null)return;const ref=String.fromCharCode(65+ci)+(ri+1),mo=s.money.indexOf(ci)>-1;
-      if(typeof v==='string')x+='<c r="'+ref+'" t="inlineStr"'+(ri===0||ri===last?' s="2"':'')+'><is><t>'+X(v)+'</t></is></c>';
-      else{const f=typeof v==='object'?v:{v},sty=ri===last?(mo?3:4):(mo?1:0);x+='<c r="'+ref+'" s="'+sty+'">'+(f.f?'<f>'+f.f+'</f>':'')+'<v>'+f.v+'</v></c>'}
+  // Estilos: 0 texto, 1 monto, 2 encabezado (azul, letra blanca), 3 total monto, 4 total texto, 5 fecha, 6 número.
+  // Una celda {d:'AAAA-MM-DD'} se guarda como fecha real; {f, v} como fórmula. La última fila es el total.
+  const col=i=>String.fromCharCode(65+i),serial=d=>{const[y,m,dd]=d.split('-').map(Number);return(Date.UTC(y,m-1,dd)-Date.UTC(1899,11,30))/864e5};
+  const filt=s=>s.aoa.length>2&&s.filter!==false?'A1:'+col(s.aoa[0].length-1)+(s.aoa.length-1):'';
+  const sh=s=>{const last=s.aoa.length-1,f=filt(s);
+    let x=H+'<worksheet '+NS+'><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>'+
+      '<sheetFormatPr defaultRowHeight="15"/><cols>'+s.widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols><sheetData>';
+    s.aoa.forEach((row,ri)=>{x+='<row r="'+(ri+1)+'"'+(ri===0?' ht="22" customHeight="1"':'')+'>';row.forEach((v,ci)=>{
+      const ref=col(ci)+(ri+1),mo=s.money.indexOf(ci)>-1,tot=ri===last&&ri>0;
+      if(v===''||v==null){if(tot||ri===0)x+='<c r="'+ref+'" s="'+(ri===0?2:4)+'"/>';return}
+      if(typeof v==='string')x+='<c r="'+ref+'" t="inlineStr" s="'+(ri===0?2:tot?4:0)+'"><is><t>'+X(v)+'</t></is></c>';
+      else if(typeof v==='object'&&v.d)x+='<c r="'+ref+'" s="5"><v>'+serial(v.d)+'</v></c>';
+      else{const o=typeof v==='object'?v:{v},sty=tot?(mo?3:4):(mo?1:6);x+='<c r="'+ref+'" s="'+sty+'">'+(o.f?'<f>'+o.f+'</f>':'')+'<v>'+o.v+'</v></c>'}
     });x+='</row>'});
-    return x+'</sheetData></worksheet>'};
+    return x+'</sheetData>'+(f?'<autoFilter ref="'+f+'"/>':'')+'<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>'};
   const ct=H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+sheets.map((s,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
   const R='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-  const styles=H+'<styleSheet '+NS+'><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const styles=H+'<styleSheet '+NS+'><numFmts count="2"><numFmt numFmtId="164" formatCode="&quot;C$&quot;#,##0.00"/><numFmt numFmtId="165" formatCode="dd/mm/yyyy"/></numFmts>'+
+    '<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1A2B49"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+    '<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border>'+
+    '<border><left style="thin"><color rgb="FFDFE3EA"/></left><right style="thin"><color rgb="FFDFE3EA"/></right><top style="thin"><color rgb="FFDFE3EA"/></top><bottom style="thin"><color rgb="FFDFE3EA"/></bottom><diagonal/></border>'+
+    '<border><left/><right/><top style="medium"><color rgb="FF1A2B49"/></top><bottom style="medium"><color rgb="FF1A2B49"/></bottom><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7">'+
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>'+
+    '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+    '<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>'+
+    '<xf numFmtId="164" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyNumberFormat="1" applyBorder="1"/>'+
+    '<xf numFmtId="0" fontId="1" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1"/>'+
+    '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>'+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
   const files=[{n:'[Content_Types].xml',d:ct},
     {n:'_rels/.rels',d:H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+R+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
-    {n:'xl/workbook.xml',d:H+'<workbook '+NS+' xmlns:r="'+R+'"><sheets>'+sheets.map((s,i)=>'<sheet name="'+X(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>'},
+    {n:'xl/workbook.xml',d:H+'<workbook '+NS+' xmlns:r="'+R+'"><sheets>'+sheets.map((s,i)=>'<sheet name="'+X(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets>'+
+      (sheets.some(filt)?'<definedNames>'+sheets.map((s,i)=>filt(s)?'<definedName name="_xlnm._FilterDatabase" localSheetId="'+i+'" hidden="1">\''+X(s.name)+'\'!'+filt(s).replace(/([A-Z]+)(\d+)/g,'$$$1$$$2')+'</definedName>':'').join('')+'</definedNames>':'')+'</workbook>'},
     {n:'xl/_rels/workbook.xml.rels',d:H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((s,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+R+'/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'<Relationship Id="rId'+(sheets.length+1)+'" Type="'+R+'/styles" Target="styles.xml"/></Relationships>'},
     {n:'xl/styles.xml',d:styles}].concat(sheets.map((s,i)=>({n:'xl/worksheets/sheet'+(i+1)+'.xml',d:sh(s)})));
   return zip(files);
@@ -1089,9 +1130,11 @@ async function excel(){
   if(!l.length){m.textContent='No hay egresos en ese periodo para exportar.';return}
   m.textContent='Preparando archivo…';
   const a=$('xd').value,b=$('xh').value,tot=l.reduce((s,r)=>s+r.monto,0);
-  const mt=view==='all',T=mt?[r=>r._tn]:[],mc=String.fromCharCode(71+T.length);
-  const aoa=[(mt?['Tienda']:[]).concat(['No. de egreso','Tipo','Fecha','Descripción','Proveedor / Páguese a','Grupo','Monto (C$)','Estado','Fecha de pago'])].concat(l.map(r=>T.map(f=>f(r)).concat([lab(r),tipoT(r),fdate(r.fecha),r.concepto||'Sin concepto',r.para||'',r.grupo||'Sin grupo',r.monto,VL[vst(r)],fp(r)?fdate(fp(r)):''])));
-  aoa.push(T.map(()=>'').concat(['','','','','','TOTAL',{f:'SUM('+mc+'2:'+mc+(aoa.length)+')',v:Math.round(tot*100)/100}]));
+  // Mismas columnas y mismo orden que la tabla de la página (incluido el orden elegido con clic en los títulos).
+  const mt=view==='all',cols=XC(),mi=cols.findIndex(c=>c.n),mc=String.fromCharCode(65+mi);
+  const W={tienda:14,lab:16,tipo:20,fecha:12,concepto:38,para:28,grupo:18,monto:15,estado:13,fpago:14};
+  const aoa=[cols.map(c=>c.n?'Monto (C$)':c.h)].concat(l.map(r=>cols.map(c=>{const v=c.v(r);return c.d?(v?{d:v}:''):v})));
+  aoa.push(cols.map((c,i)=>i===mi?{f:'SUM('+mc+'2:'+mc+(aoa.length)+')',v:Math.round(tot*100)/100}:i===mi-1?'TOTAL':''));
   const sum=key=>{const g={};l.forEach(r=>{const k=key(r);g[k]=g[k]||[0,0];g[k][0]++;g[k][1]+=r.monto});
     const t=[[key.h,'Cantidad','Monto (C$)']].concat(Object.keys(g).sort((x,y)=>g[y][1]-g[x][1]).map(k=>[k,g[k][0],Math.round(g[k][1]*100)/100]));
     t.push(['TOTAL',l.length,{f:'SUM(C2:C'+(t.length)+')',v:Math.round(tot*100)/100}]);return t};
@@ -1100,17 +1143,27 @@ async function excel(){
   const name='egresos_'+(who?who.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'_':'')+(a||'inicio')+'_a_'+(b||today)+'.xlsx';
   m.textContent='Preparando archivo…';
   try{
-    const sheets=[{name:'Consolidado',aoa,widths:(mt?[22]:[]).concat([16,20,12,38,26,16,14,11,13]),money:[6+T.length]},{name:'Por grupo',aoa:sum(byG),widths:[24,10,14],money:[2]}];
+    const sheets=[{name:'Consolidado',aoa,widths:cols.map(c=>W[c.k]||14),money:[mi]},{name:'Por grupo',aoa:sum(byG),widths:[24,10,15],money:[2]}];
     if(mt)sheets.push({name:'Por tienda',aoa:sum(byT),widths:[28,10,14],money:[2]});
     const blob=buildXlsx(sheets);
     await saveFile(name,blob);m.textContent='Archivo descargado: '+name;
   }catch(e){m.textContent=(e&&e.code==='declined')?'Descarga cancelada.':'No se pudo descargar ('+((e&&e.code)||'error')+'): '+((e&&e.message)||e);checkPerm()}
 }
 $('xl').onclick=excel;
+// Copiar la tabla: texto separado por tabulaciones (lo que Excel entiende al pegar) y también como tabla HTML.
+function copyLegacy(t){const a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();return ok}
 $('xc').onclick=()=>{
-  const r=document.createRange();r.selectNode(document.querySelector('.xt'));const s=getSelection();s.removeAllRanges();s.addRange(r);
-  let ok=false;try{ok=document.execCommand('copy')}catch(e){}s.removeAllRanges();
-  $('xm').textContent=ok?'Tabla copiada. Pégala en Excel con Ctrl+V.':'No se pudo copiar. Selecciona la tabla con el mouse y copia con Ctrl+C.';
+  const l=consRows(),cols=XC(),m=$('xm');
+  if(!l.length){m.textContent='No hay egresos en ese periodo para copiar.';return}
+  const cell=(c,r)=>{const v=c.v(r);return c.d?(v?fdate(v):''):c.n?Number(v).toFixed(2):String(v).replace(/[\t\r\n]+/g,' ')};
+  const tsv=[cols.map(c=>c.h).join('\t')].concat(l.map(r=>cols.map(c=>cell(c,r)).join('\t'))).join('\r\n');
+  const html='<table><thead><tr>'+cols.map(c=>'<th>'+esc(c.h)+'</th>').join('')+'</tr></thead><tbody>'+l.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(cell(c,r))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+  const done=ok=>{m.textContent=ok?'Tabla copiada ('+l.length+(l.length==1?' fila':' filas')+'). Pégala en Excel con Ctrl+V.':'No se pudo copiar en este navegador. Usa "Descargar Excel".'};
+  const fallback=()=>navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(tsv).then(()=>done(true),()=>done(copyLegacy(tsv))):done(copyLegacy(tsv));
+  try{
+    if(navigator.clipboard&&window.ClipboardItem){navigator.clipboard.write([new ClipboardItem({'text/plain':new Blob([tsv],{type:'text/plain'}),'text/html':new Blob([html],{type:'text/html'})})]).then(()=>done(true),fallback);return}
+  }catch(e){}
+  fallback();
 };
 $('mes').value=today.slice(0,7);syncX();
 $('mp').onclick=()=>{const[y,m]=$('mes').value.split('-').map(Number);setMes(iso(new Date(y,m-2,1)).slice(0,7))};
@@ -1211,6 +1264,64 @@ async function downloadReceipt(r,m){
 }
 let vCur=null;
 $('pdfb').onclick=()=>downloadReceipt(vCur,$('vm'));
+// PDF de facturas pendientes: una portada con la lista y, detrás, todos los PDF y fotos adjuntos, para imprimir de una vez.
+async function adjBlob(r){
+  const a=r.adj;if(!a)return null;
+  if(a.db){const x=await adjRef(sidOf(r),a.id).get();if(!x.exists)return null;const m=x.data();return m.liberado?null:dbBlob(sidOf(r),a.id,m)}
+  if(a.local)return IDB.get(a.id);
+  const res=await fetch('/_blob/'+a.id);return res.ok?res.blob():null;
+}
+async function toJpeg(blob){const b=await createImageBitmap(blob),c=document.createElement('canvas');c.width=b.width;c.height=b.height;c.getContext('2d').drawImage(b,0,0);return new Uint8Array(await (await new Promise(r=>c.toBlob(r,'image/jpeg',0.9))).arrayBuffer())}
+async function pendPdf(R,titulo,m){
+  const tn=r=>r._tn||cfg.tienda||'';
+  const L=R.filter(r=>isF(r)&&!anul(r)&&!paid(r)).sort((a,b)=>tn(a).localeCompare(tn(b))||a.fecha.localeCompare(b.fecha)||a.n-b.n);
+  if(!L.length){m.textContent='No hay facturas pendientes de pago aquí.';return}
+  m.textContent='Preparando PDF…';
+  try{
+    await lib('pdflib',[CDN+'pdf-lib/1.17.1/pdf-lib.min.js']);
+    const{PDFDocument,StandardFonts,rgb}=PDFLib,doc=await PDFDocument.create(),fn=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
+    const W=612,H=792,M=40,NV=rgb(.102,.169,.286),MU=rgb(.357,.404,.502),OR=rgb(.906,.447,.031);
+    const T=s=>String(s==null?'':s).replace(/[–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/…/g,'...').replace(/[^\x20-\x7E\xA0-\xFF]/g,'');
+    const fit=(s,f,z,w)=>{s=T(s);if(f.widthOfTextAtSize(s,z)<=w)return s;while(s.length&&f.widthOfTextAtSize(s+'...',z)>w)s=s.slice(0,-1);return s+'...'};
+    const cols=[['Tienda',M,58],['Factura',M+62,86],['Proveedor',M+152,200],['Fecha',M+356,60],['Monto',M+420,80],['Adjunto',M+508,64]];
+    let pg,y;const total=L.reduce((s,r)=>s+r.monto,0);
+    const head=()=>{pg=doc.addPage([W,H]);pg.drawRectangle({x:0,y:H-70,width:W,height:70,color:NV});pg.drawRectangle({x:0,y:H-74,width:W,height:4,color:OR});
+      pg.drawText('Facturas pendientes de pago',{x:M,y:H-40,size:18,font:fb,color:rgb(1,1,1)});
+      pg.drawText(fit(titulo+' · generado el '+fdate(today),fn,10,W-2*M),{x:M,y:H-58,size:10,font:fn,color:rgb(.85,.88,.93)});
+      y=H-100;cols.forEach(c=>pg.drawText(c[0],{x:c[0]==='Monto'?c[1]+c[2]-fb.widthOfTextAtSize('Monto',9):c[1],y,size:9,font:fb,color:MU}));
+      pg.drawLine({start:{x:M,y:y-5},end:{x:W-M,y:y-5},thickness:1,color:MU});y-=20};
+    head();
+    for(const r of L){
+      if(y<70)head();
+      const v=[tn(r),r.nfac||'s/n',r.para||r.concepto||'',fdate(r.fecha),fmt(r.monto),r.adj?'Sí':'Sin adjunto'];
+      cols.forEach((c,i)=>{const s=fit(v[i],fn,9,c[2]);pg.drawText(s,{x:i===4?c[1]+c[2]-fn.widthOfTextAtSize(s,9):c[1],y,size:9,font:fn,color:i===5&&!r.adj?OR:NV})});
+      pg.drawLine({start:{x:M,y:y-5},end:{x:W-M,y:y-5},thickness:.4,color:rgb(.87,.89,.92)});y-=17;
+    }
+    if(y<80)head();y-=6;
+    pg.drawText('Total: '+L.length+(L.length==1?' factura':' facturas'),{x:M,y,size:11,font:fb,color:NV});
+    const ts=fmt(total);pg.drawText(ts,{x:cols[4][1]+cols[4][2]-fb.widthOfTextAtSize(ts,11),y,size:11,font:fb,color:NV});
+    let ok=0,miss=0;
+    for(let i=0;i<L.length;i++){const r=L[i];if(!r.adj){miss++;continue}
+      m.textContent='Agregando factura '+(i+1)+' de '+L.length+'…';
+      try{
+        const b=await adjBlob(r);if(!b){miss++;continue}
+        const u=new Uint8Array(await b.arrayBuffer()),pdf=b.type==='application/pdf'||(u[0]===0x25&&u[1]===0x50&&u[2]===0x44&&u[3]===0x46);
+        if(pdf){const src=await PDFDocument.load(u,{ignoreEncryption:true});(await doc.copyPages(src,src.getPageIndices())).forEach(p=>doc.addPage(p))}
+        else{
+          const img=b.type==='image/png'?await doc.embedPng(u):b.type==='image/jpeg'?await doc.embedJpg(u):await doc.embedJpg(await toJpeg(b));
+          const p=doc.addPage([W,H]);p.drawText(fit(tn(r)+' · Fact. '+(r.nfac||'s/n')+' · '+(r.para||'')+' · '+fmt(r.monto),fb,10,W-2*M),{x:M,y:H-30,size:10,font:fb,color:NV});
+          const s=Math.min((W-2*M)/img.width,(H-80)/img.height,1),w=img.width*s,h=img.height*s;p.drawImage(img,{x:(W-w)/2,y:H-45-h,width:w,height:h});
+        }
+        ok++;
+      }catch(e){miss++}
+    }
+    const name='facturas-pendientes_'+titulo.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'_'+today+'.pdf';
+    await saveFile(name,new Blob([await doc.save()],{type:'application/pdf'}));
+    m.textContent='PDF descargado: '+name+' ('+L.length+(L.length==1?' factura':' facturas')+(miss?'; '+miss+' sin adjunto, solo en la portada':'')+').';
+  }catch(e){m.textContent=(e&&e.code==='declined')?'Descarga cancelada.':'No se pudo crear el PDF ('+((e&&e.code)||(e&&e.message)||e)+').'}
+}
+$('pdfp').onclick=()=>pendPdf(rows,view==='all'?'Todas las tiendas':view==='own'?(cfg.tienda||'Mi tienda'):((stores.find(x=>x.id===view)||{}).tienda||'Tienda'),$('pdfpm'));
+$('admp').onclick=async()=>{const m=$('admxm');m.textContent='Cargando tiendas…';await Promise.all(stores.map(x=>loadStore(x.id,$('mes').value).catch(()=>{})));pendPdf(allRows(),'Todas las tiendas',m)};
 $('cl').onclick=()=>{$('v').style.display='none'};
 // Visor de adjuntos dentro de la página: las pestañas nuevas suelen bloquearse.
 let avUrl=null,avCur=null,avList=[];
