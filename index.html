@@ -108,6 +108,16 @@ details.card>summary{cursor:pointer;color:var(--nv);font-size:.95rem}
 #acr button{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--bd);color:var(--nv);font-weight:500;margin-top:4px;padding:8px}
 #acr button small{color:var(--mu);margin-left:6px}
 .xt td input,.xt td select{padding:5px;min-width:90px}
+#sel{display:none;position:fixed;inset:0;z-index:50;background:rgba(10,18,33,.72);padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
+#sel.on{display:flex;align-items:center;justify-content:center}
+.selw{background:#fff;border-radius:12px;width:100%;max-width:760px;max-height:100%;display:flex;flex-direction:column;overflow:hidden}
+.selq{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
+.sell{flex:1;min-height:120px;overflow:auto;padding:0 14px 8px}
+.sell label{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--bd);cursor:pointer;color:var(--nv);font-size:.9rem;margin:0}
+.sell label input{width:20px;height:20px;margin:0;accent-color:var(--nv)}
+.sell label small{display:block;color:var(--mu);font-size:.78rem}.sell label b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sell .selg{font-weight:700;color:var(--or);padding:12px 0 2px;font-size:.85rem}
+@media(max-width:760px){#sel{padding:0}.selw{border-radius:0;height:100%}}
 .xt th.srt{cursor:pointer;user-select:none}.xt th.srt:hover{background:#2a3d63}.xt th.srt i{font-style:normal;color:var(--or);margin-left:4px}
 @media(min-width:1000px){#admls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}#admls .card{margin:0}}
 .navb{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -138,7 +148,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 /* Margen de página en 0 para que el navegador no imprima fecha, hora, título ni dirección; el margen lo da el body. */
 @page{size:letter;margin:0}
 @media print{body{background:#fff;padding:14mm 16mm}main{padding:0;max-width:none}
-  header,#err,#sw,#pm,#av,.lcol,#dcard,#lcard,#xcard,#sup,#adm,#setup,#noacc,#cuenta,#aviso-clave,#cclave,#login,#vm,#simbar{display:none!important}.layout,.rcol{display:block!important}#v{display:block!important;border:0;padding:0;margin:0}.bar2{display:none!important}.rc{border:0;max-width:none;padding:0;font-size:12px}.rtt{font-size:24px}.rbox{font-size:20px}.ln{font-size:14px}}
+  header,#err,#sw,#pm,#av,#sel,.lcol,#dcard,#lcard,#xcard,#sup,#adm,#setup,#noacc,#cuenta,#aviso-clave,#cclave,#login,#vm,#simbar{display:none!important}.layout,.rcol{display:block!important}#v{display:block!important;border:0;padding:0;margin:0}.bar2{display:none!important}.rc{border:0;max-width:none;padding:0;font-size:12px}.rtt{font-size:24px}.rbox{font-size:20px}.ln{font-size:14px}}
 </style>
 </head>
 <body>
@@ -171,7 +181,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 <section id="adm" style="display:none" aria-labelledby="admt">
   <div class="card">
     <div class="admh"><div><h2 id="admt" style="margin:0">Panel de tiendas</h2><div class="st" id="admst" style="margin-top:2px"></div></div>
-      <div class="ac" style="margin:0"><button class="sec sm" id="admr">Actualizar</button><button class="sec sm" id="adma">Ver todas juntas</button><button class="sec sm" id="admx">Excel para gerencia</button><button class="sec sm" id="admp">PDF de facturas pendientes</button><button class="sm" id="admo">Registrar en mi tienda</button></div></div>
+      <div class="ac" style="margin:0"><button class="sec sm" id="admr">Actualizar</button><button class="sec sm" id="adma">Ver todas juntas</button><button class="sec sm" id="admx">Excel para gerencia</button><button class="sec sm" id="admp">PDF de pendientes</button><button class="sm" id="admo">Registrar en mi tienda</button></div></div>
     <div id="admw" class="st" style="display:none;margin-top:8px;color:var(--nv);font-weight:600">Estás registrado como administrador, pero para ver las tiendas el dueño de la app debe compartírtela como Editor.</div>
     <div id="admxm" class="st"></div>
     <div class="mnav" style="margin-top:12px"><button class="sec sm" id="amp" aria-label="Mes anterior">‹</button><b id="aml"></b><button class="sec sm" id="amn" aria-label="Mes siguiente">›</button></div>
@@ -277,7 +287,7 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 <div class="card" id="lcard">
   <h2>Egresos y facturas</h2>
   <input id="q" placeholder="Buscar por número, nombre, concepto o monto" style="margin-bottom:10px">
-  <div class="ac" style="margin:0 0 10px"><button class="sec sm" id="pdfp">PDF de facturas pendientes</button><span class="st" id="pdfpm" style="margin:0"></span></div>
+  <div class="ac" style="margin:0 0 10px"><button class="sec sm" id="pdfp">PDF de pendientes</button><span class="st" id="pdfpm" style="margin:0"></span></div>
   <details style="margin-bottom:10px"><summary>Filtros por fecha, estado y grupo</summary><div style="margin-top:10px">
   <div class="row" style="margin-bottom:10px">
     <div><label for="fb">Filtrar fechas por</label><select id="fb"><option value="pago">Fecha de pago</option><option value="recibo">Fecha del recibo</option></select></div>
@@ -297,6 +307,15 @@ a.btn{display:inline-flex;align-items:center;text-decoration:none;border:1px sol
 </div>
 </div>
 </main>
+
+<div id="sel" role="dialog" aria-modal="true" aria-labelledby="selt">
+  <div class="selw">
+    <div class="avh"><h2 id="selt">Elegir egresos pendientes para el PDF</h2><button class="sec sm" id="selx" aria-label="Cerrar">✕</button></div>
+    <div class="selq"><span class="st" style="margin:0">Marcar:</span><button class="sec sm" data-q="all">Todos</button><button class="sec sm" data-q="f">Solo facturas</button><button class="sec sm" data-q="r">Solo recibos</button><button class="sec sm" data-q="none">Ninguno</button></div>
+    <div class="sell" id="sell"></div>
+    <div class="avf"><span id="selsum" style="font-weight:700"></span><span class="sp"></span><button class="sm" id="selgo">Descargar PDF</button></div>
+  </div>
+</div>
 
 <div id="av" role="dialog" aria-modal="true" aria-labelledby="avt">
   <div class="avw" id="avw">
@@ -1245,16 +1264,17 @@ $('cs').onclick=async()=>{
 $('pr').onclick=()=>window.print();
 // Recibo en PDF: dentro de claude.ai no se puede imprimir, así que se genera el PDF y se descarga.
 const CDN='https://cdnjs.cloudflare.com/ajax/libs/';
-async function receiptPdf(r){
+// Dibuja el recibo como imagen (lo usan el PDF de un recibo y el PDF de pendientes).
+async function receiptCanvas(r){
   await lib('pdfgen',[CDN+'html2canvas/1.4.1/html2canvas.min.js',CDN+'jspdf/2.5.1/jspdf.umd.min.js']);
   const host=document.createElement('div');host.className='rcpdf';host.style.cssText='position:fixed;left:-10000px;top:0;width:760px;background:#fff';
   host.innerHTML='<div class="rc" style="max-width:none;border:0;padding:24px 28px;font-size:12px">'+rcHtml(r)+'</div>';document.body.appendChild(host);
-  try{
-    const cv=await html2canvas(host.firstChild,{scale:2,backgroundColor:'#ffffff'});
-    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'letter'}),W=215.9-28;
-    pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',14,14,W,cv.height*W/cv.width);
-    return pdf.output('blob');
-  }finally{host.remove()}
+  try{return await html2canvas(host.firstChild,{scale:2,backgroundColor:'#ffffff'})}finally{host.remove()}
+}
+async function receiptPdf(r){
+  const cv=await receiptCanvas(r),pdf=new window.jspdf.jsPDF({unit:'mm',format:'letter'}),W=215.9-28;
+  pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',14,14,W,cv.height*W/cv.width);
+  return pdf.output('blob');
 }
 async function downloadReceipt(r,m){
   if(!r)return;m.textContent='Preparando PDF…';
@@ -1272,10 +1292,11 @@ async function adjBlob(r){
   const res=await fetch('/_blob/'+a.id);return res.ok?res.blob():null;
 }
 async function toJpeg(blob){const b=await createImageBitmap(blob),c=document.createElement('canvas');c.width=b.width;c.height=b.height;c.getContext('2d').drawImage(b,0,0);return new Uint8Array(await (await new Promise(r=>c.toBlob(r,'image/jpeg',0.9))).arrayBuffer())}
-async function pendPdf(R,titulo,m){
-  const tn=r=>r._tn||cfg.tienda||'';
-  const L=R.filter(r=>isF(r)&&!anul(r)&&!paid(r)).sort((a,b)=>tn(a).localeCompare(tn(b))||a.fecha.localeCompare(b.fecha)||a.n-b.n);
-  if(!L.length){m.textContent='No hay facturas pendientes de pago aquí.';return}
+const tnOf=r=>r._tn||cfg.tienda||'';
+// Orden del PDF y de la lista: por tienda, primero los recibos y luego las facturas; dentro, por fecha.
+const pendSort=(a,b)=>tnOf(a).localeCompare(tnOf(b))||(isF(a)-isF(b))||a.fecha.localeCompare(b.fecha)||a.n-b.n;
+async function pendPdf(L,titulo,m){
+  if(!L.length){m.textContent='No elegiste ningún egreso.';return}
   m.textContent='Preparando PDF…';
   try{
     await lib('pdflib',[CDN+'pdf-lib/1.17.1/pdf-lib.min.js']);
@@ -1283,45 +1304,75 @@ async function pendPdf(R,titulo,m){
     const W=612,H=792,M=40,NV=rgb(.102,.169,.286),MU=rgb(.357,.404,.502),OR=rgb(.906,.447,.031);
     const T=s=>String(s==null?'':s).replace(/[–—]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/…/g,'...').replace(/[^\x20-\x7E\xA0-\xFF]/g,'');
     const fit=(s,f,z,w)=>{s=T(s);if(f.widthOfTextAtSize(s,z)<=w)return s;while(s.length&&f.widthOfTextAtSize(s+'...',z)>w)s=s.slice(0,-1);return s+'...'};
-    const cols=[['Tienda',M,58],['Factura',M+62,86],['Proveedor',M+152,200],['Fecha',M+356,60],['Monto',M+420,80],['Adjunto',M+508,64]];
-    let pg,y;const total=L.reduce((s,r)=>s+r.monto,0);
+    const cols=[['Tienda',M,56],['Tipo',M+58,42],['Número',M+102,72],['Proveedor / Páguese a',M+178,170],['Fecha',M+352,56],['Monto',M+410,76],['Documento',M+492,80]];
+    let pg,y;const total=L.reduce((s,r)=>s+r.monto,0),nf=L.filter(isF).length,nr=L.length-nf;
     const head=()=>{pg=doc.addPage([W,H]);pg.drawRectangle({x:0,y:H-70,width:W,height:70,color:NV});pg.drawRectangle({x:0,y:H-74,width:W,height:4,color:OR});
-      pg.drawText('Facturas pendientes de pago',{x:M,y:H-40,size:18,font:fb,color:rgb(1,1,1)});
+      pg.drawText('Egresos pendientes de pago',{x:M,y:H-40,size:18,font:fb,color:rgb(1,1,1)});
       pg.drawText(fit(titulo+' · generado el '+fdate(today),fn,10,W-2*M),{x:M,y:H-58,size:10,font:fn,color:rgb(.85,.88,.93)});
-      y=H-100;cols.forEach(c=>pg.drawText(c[0],{x:c[0]==='Monto'?c[1]+c[2]-fb.widthOfTextAtSize('Monto',9):c[1],y,size:9,font:fb,color:MU}));
+      y=H-100;cols.forEach(c=>{const s=T(c[0]);pg.drawText(s,{x:c[0]==='Monto'?c[1]+c[2]-fb.widthOfTextAtSize(s,9):c[1],y,size:9,font:fb,color:MU})});
       pg.drawLine({start:{x:M,y:y-5},end:{x:W-M,y:y-5},thickness:1,color:MU});y-=20};
     head();
     for(const r of L){
       if(y<70)head();
-      const v=[tn(r),r.nfac||'s/n',r.para||r.concepto||'',fdate(r.fecha),fmt(r.monto),r.adj?'Sí':'Sin adjunto'];
-      cols.forEach((c,i)=>{const s=fit(v[i],fn,9,c[2]);pg.drawText(s,{x:i===4?c[1]+c[2]-fn.widthOfTextAtSize(s,9):c[1],y,size:9,font:fn,color:i===5&&!r.adj?OR:NV})});
+      const v=[tnOf(r),isF(r)?'Factura':'Recibo',isF(r)?(r.nfac||'s/n'):lab(r),r.para||r.concepto||'',fdate(r.fecha),fmt(r.monto),isF(r)?(r.adj?'Adjunto':'Sin adjunto'):'Recibo'];
+      cols.forEach((c,i)=>{const s=fit(v[i],fn,9,c[2]);pg.drawText(s,{x:i===5?c[1]+c[2]-fn.widthOfTextAtSize(s,9):c[1],y,size:9,font:fn,color:i===6&&isF(r)&&!r.adj?OR:NV})});
       pg.drawLine({start:{x:M,y:y-5},end:{x:W-M,y:y-5},thickness:.4,color:rgb(.87,.89,.92)});y-=17;
     }
     if(y<80)head();y-=6;
-    pg.drawText('Total: '+L.length+(L.length==1?' factura':' facturas'),{x:M,y,size:11,font:fb,color:NV});
-    const ts=fmt(total);pg.drawText(ts,{x:cols[4][1]+cols[4][2]-fb.widthOfTextAtSize(ts,11),y,size:11,font:fb,color:NV});
-    let ok=0,miss=0;
-    for(let i=0;i<L.length;i++){const r=L[i];if(!r.adj){miss++;continue}
-      m.textContent='Agregando factura '+(i+1)+' de '+L.length+'…';
+    pg.drawText(T('Total: '+(nr?nr+(nr==1?' recibo':' recibos'):'')+(nr&&nf?' y ':'')+(nf?nf+(nf==1?' factura':' facturas'):'')),{x:M,y,size:11,font:fb,color:NV});
+    const ts=fmt(total);pg.drawText(ts,{x:cols[5][1]+cols[5][2]-fb.widthOfTextAtSize(ts,11),y,size:11,font:fb,color:NV});
+    let miss=0;
+    for(let i=0;i<L.length;i++){const r=L[i];
+      m.textContent='Agregando '+(i+1)+' de '+L.length+'…';
       try{
+        if(!isF(r)){
+          // Recibo: imagen del recibo, uno por página.
+          const cv=await receiptCanvas(r),img=await doc.embedJpg(new Uint8Array(await (await new Promise(x=>cv.toBlob(x,'image/jpeg',0.9))).arrayBuffer()));
+          const w=W-2*M,h=Math.min(img.height*w/img.width,H-2*M);
+          doc.addPage([W,H]).drawImage(img,{x:M,y:H-M-h,width:w,height:h});
+          continue;
+        }
+        if(!r.adj){miss++;continue}
         const b=await adjBlob(r);if(!b){miss++;continue}
         const u=new Uint8Array(await b.arrayBuffer()),pdf=b.type==='application/pdf'||(u[0]===0x25&&u[1]===0x50&&u[2]===0x44&&u[3]===0x46);
         if(pdf){const src=await PDFDocument.load(u,{ignoreEncryption:true});(await doc.copyPages(src,src.getPageIndices())).forEach(p=>doc.addPage(p))}
         else{
           const img=b.type==='image/png'?await doc.embedPng(u):b.type==='image/jpeg'?await doc.embedJpg(u):await doc.embedJpg(await toJpeg(b));
-          const p=doc.addPage([W,H]);p.drawText(fit(tn(r)+' · Fact. '+(r.nfac||'s/n')+' · '+(r.para||'')+' · '+fmt(r.monto),fb,10,W-2*M),{x:M,y:H-30,size:10,font:fb,color:NV});
+          const p=doc.addPage([W,H]);p.drawText(fit(tnOf(r)+' · Fact. '+(r.nfac||'s/n')+' · '+(r.para||'')+' · '+fmt(r.monto),fb,10,W-2*M),{x:M,y:H-30,size:10,font:fb,color:NV});
           const s=Math.min((W-2*M)/img.width,(H-80)/img.height,1),w=img.width*s,h=img.height*s;p.drawImage(img,{x:(W-w)/2,y:H-45-h,width:w,height:h});
         }
-        ok++;
       }catch(e){miss++}
     }
-    const name='facturas-pendientes_'+titulo.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'_'+today+'.pdf';
+    const name='pendientes_'+titulo.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')+'_'+today+'.pdf';
     await saveFile(name,new Blob([await doc.save()],{type:'application/pdf'}));
-    m.textContent='PDF descargado: '+name+' ('+L.length+(L.length==1?' factura':' facturas')+(miss?'; '+miss+' sin adjunto, solo en la portada':'')+').';
+    m.textContent='PDF descargado: '+name+' ('+L.length+(L.length==1?' egreso':' egresos')+(miss?'; '+miss+(miss==1?' factura sin adjunto aparece':' facturas sin adjunto aparecen')+' solo en la portada':'')+').';
   }catch(e){m.textContent=(e&&e.code==='declined')?'Descarga cancelada.':'No se pudo crear el PDF ('+((e&&e.code)||(e&&e.message)||e)+').'}
 }
-$('pdfp').onclick=()=>pendPdf(rows,view==='all'?'Todas las tiendas':view==='own'?(cfg.tienda||'Mi tienda'):((stores.find(x=>x.id===view)||{}).tienda||'Tienda'),$('pdfpm'));
-$('admp').onclick=async()=>{const m=$('admxm');m.textContent='Cargando tiendas…';await Promise.all(stores.map(x=>loadStore(x.id,$('mes').value).catch(()=>{})));pendPdf(allRows(),'Todas las tiendas',m)};
+// Ventana para elegir qué egresos pendientes van en el PDF. Todos empiezan marcados.
+let selCtx=null;
+function openSel(R,titulo,m){
+  const L=R.filter(r=>!anul(r)&&!paid(r)).sort(pendSort);
+  if(!L.length){m.textContent='No hay egresos pendientes de pago aquí.';return}
+  selCtx={L,titulo,m,chk:new Set(L.map(rk))};m.textContent='';
+  $('selt').textContent='Elegir egresos pendientes · '+titulo;renderSel();$('sel').classList.add('on');document.body.style.overflow='hidden';
+}
+function closeSel(){$('sel').classList.remove('on');if(!avCur)document.body.style.overflow='';selCtx=null}
+function renderSel(){
+  const{L,chk}=selCtx,multi=new Set(L.map(tnOf)).size>1;let last=null;
+  $('sell').innerHTML=L.map(r=>{const t=tnOf(r),g=multi&&t!==last?'<div class="selg">'+esc(t)+'</div>':'';last=t;
+    return g+'<label><input type="checkbox" data-sk="'+esc(rk(r))+'"'+(chk.has(rk(r))?' checked':'')+'><span>'+esc(lab(r))+' · '+esc(r.para||r.concepto||'Sin detalle')+
+      '<small>'+(isF(r)?'Factura'+(r.adj?'':' · sin adjunto'):'Recibo de egreso')+' · '+fdate(r.fecha)+(vst(r)==='validar'?' · por validar':'')+'</small></span><b>'+fmt(r.monto)+'</b></label>'}).join('');
+  selSum();
+}
+function selSum(){const S=selCtx.L.filter(r=>selCtx.chk.has(rk(r)));$('selsum').textContent=S.length+' de '+selCtx.L.length+' · '+fmt(S.reduce((s,r)=>s+r.monto,0));$('selgo').disabled=!S.length}
+$('sell').onchange=e=>{const k=e.target.dataset.sk;if(!k)return;e.target.checked?selCtx.chk.add(k):selCtx.chk.delete(k);selSum()};
+document.querySelector('.selq').onclick=e=>{const q=e.target.dataset.q;if(!q||!selCtx)return;
+  selCtx.chk=new Set(selCtx.L.filter(r=>q==='all'||(q==='f'&&isF(r))||(q==='r'&&!isF(r))).map(rk));renderSel()};
+$('selx').onclick=closeSel;$('sel').onclick=e=>{if(e.target===$('sel'))closeSel()};
+$('selgo').onclick=()=>{const c=selCtx;if(!c)return;const S=c.L.filter(r=>c.chk.has(rk(r)));closeSel();pendPdf(S,c.titulo,c.m)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&selCtx)closeSel()});
+$('pdfp').onclick=()=>openSel(rows,view==='all'?'Todas las tiendas':view==='own'?(cfg.tienda||'Mi tienda'):((stores.find(x=>x.id===view)||{}).tienda||'Tienda'),$('pdfpm'));
+$('admp').onclick=async()=>{const m=$('admxm');m.textContent='Cargando tiendas…';await Promise.all(stores.map(x=>loadStore(x.id,$('mes').value).catch(()=>{})));m.textContent='';openSel(allRows(),'Todas las tiendas',m)};
 $('cl').onclick=()=>{$('v').style.display='none'};
 // Visor de adjuntos dentro de la página: las pestañas nuevas suelen bloquearse.
 let avUrl=null,avCur=null,avList=[];
